@@ -17,15 +17,16 @@ class FeedScreen extends StatelessWidget {
           child: Card(
             elevation: 4.0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
+              borderRadius: BorderRadius.circular(10.0)
             ),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Text("Title"),
-                  Text("Auther name"),
-                  Text("Category")
+                  Image.asset('assets/images/spirited_away.jpeg', fit: BoxFit.cover),
+                  Text("Title",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold)),
+                  Text("Auther name",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w500)),
+                  Text("Category",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300))
                 ],
               ),
             ),

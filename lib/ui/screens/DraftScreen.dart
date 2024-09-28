@@ -7,6 +7,7 @@ class Draftscreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final title = "the boy";
     return Column(
       children: [
       Expanded(
@@ -15,7 +16,7 @@ class Draftscreen extends StatelessWidget {
         itemBuilder: (context, index) {
           return  GestureDetector(
             onTap: (){
-              context.pushNamed(NavigationConstants.ADD_NEW_ENTRY);
+              context.push('/${NavigationConstants.ADD_NEW_ENTRY}/${true}/${title}');
             },
             child: Card(
               elevation: 4.0,  // Adds shadow for the card
@@ -43,7 +44,7 @@ class Draftscreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                 child: OutlinedButton(onPressed: (){
-                  context.pushNamed(NavigationConstants.ADD_NEW_ENTRY);
+                  context.go('${NavigationConstants.ADD_NEW_ENTRY}/${false}/${title}');
                 },
                     style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(

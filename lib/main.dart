@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:novalate/ui/screens/AddNewEntryScreen.dart';
@@ -7,7 +8,9 @@ import 'package:novalate/ui/screens/StoryReaderScreen.dart';
 import 'package:novalate/utils/AppConstants.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
-void main() {
+void main() async{
+ WidgetsFlutterBinding.ensureInitialized();
+   await Firebase.initializeApp();
   runApp(const BaseWidget());
 }
 
@@ -32,11 +35,21 @@ final _router = GoRouter(initialLocation: NavigationConstants.HOME, routes: [
   GoRoute(
       path: NavigationConstants.HOME,
       name: NavigationConstants.HOME,
-      builder: (context, state) => const HomeScreen()),
+      builder: (context, state) => const HomeScreen(),
+    ),
   GoRoute(
-      path: NavigationConstants.ADD_NEW_ENTRY,
-      name: NavigationConstants.ADD_NEW_ENTRY,
-      builder: (context, state) =>  const AddNewEntryScreen()),
+    path: '${NavigationConstants.ADD_NEW_ENTRY}/:isDraft/:title',
+    name: NavigationConstants.ADD_NEW_ENTRY,
+    builder: (context, state) {
+      final String isDraft = state.pathParameters['isDraft'] ?? 'false';
+      final String title = state.pathParameters['title'] ?? '';
+      var flag = false;
+      if(isDraft == 'true'){
+        flag = true;
+      }
+      return AddNewEntryScreen(isDraft: flag,title: title);
+    },
+  ),
   GoRoute(
       path: NavigationConstants.STORY_LIST,
       name: NavigationConstants.STORY_LIST,

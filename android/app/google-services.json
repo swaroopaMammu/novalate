@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "639521715931",
+    "project_id": "novalate-55495",
+    "storage_bucket": "novalate-55495.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:639521715931:android:dc3110f4c82adef9ec3efe",
+        "android_client_info": {
+          "package_name": "com.example.novalate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZwVgND27VvKogXMnF-ysIEntI1GvCGz8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
