@@ -1,11 +1,11 @@
+
+
 import 'package:flutter/material.dart';
-import 'package:novalate/ui/screens/CategoryScreen.dart';
-import 'package:novalate/ui/screens/DraftScreen.dart';
-import 'package:novalate/ui/screens/FeedScreen.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
+  const HomeScreen({super.key,required this.child});
+  final Widget child;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -13,16 +13,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int bottomBarIndex = 0;
 
-  final List<Widget> _widgetList = [
-    CategoryScreen(),FeedScreen(),Draftscreen()
-  ];
+
+
+  final List<String> _routes = ['/home', '/feeds', '/drafts'];
+
+  void _onTap(int index) {
+      setState(() {
+        bottomBarIndex = index;
+      });
+    context.go(_routes[bottomBarIndex]); // Navigate to selected route
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: getAppBar(),
       bottomNavigationBar: getBottomNavBar(),
-      body: _widgetList[bottomBarIndex],
+      body: widget.child
     );
   }
 
@@ -76,11 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor:Color.fromARGB(255, 17, 68, 117),
       selectedIconTheme: const IconThemeData(color: Colors.white),
       unselectedIconTheme: const IconThemeData(color: Colors.black),
-      onTap: (value){
-        setState(() {
-          bottomBarIndex = value;
-        });
-      },
+      onTap: _onTap,
       currentIndex: bottomBarIndex,
       items: const[
         BottomNavigationBarItem(icon: Icon(Icons.home),

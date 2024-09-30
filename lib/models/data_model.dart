@@ -6,6 +6,7 @@ class StoryModel{
   String image ;
   String story ;
   bool isDraft;
+  String storyId;
 
-  StoryModel(this.title, this.author, this.category, this.image, this.story, this.isDraft);
+  StoryModel(this.title, this.author, this.category, this.image, this.story, this.isDraft,this.storyId);
 }

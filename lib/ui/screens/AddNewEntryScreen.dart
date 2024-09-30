@@ -1,8 +1,9 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:novalate/bloc/new_entry_bloc.dart';
+import 'package:novalate/bloc/drafts_bloc.dart';
 import 'package:novalate/models/data_model.dart';
 import 'package:novalate/utils/firebase_fire_store.dart';
 
@@ -10,8 +11,9 @@ import '../../utils/AppConstants.dart';
 
 class AddNewEntryScreen extends StatefulWidget {
   final bool isDraft;
-  final String title;
-  const AddNewEntryScreen({super.key,required this.isDraft, required this.title});
+  final String storyId;
+  final DraftsBloc bloc;
+  const AddNewEntryScreen({super.key,required this.isDraft, required this.storyId, required this.bloc});
 
   @override
   State<AddNewEntryScreen> createState() => _AddNewEntryScreenState();
@@ -26,7 +28,6 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
   final _sController = TextEditingController();
 
   final db = DatabaseService();
-  final newBloc = NewEntryBloc();
 
   @override
   void dispose() {
@@ -35,12 +36,13 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
     _sController.dispose();
     super.dispose();
   }
+
   @override
   void initState() {
     if(widget.isDraft){
-      newBloc.add(DraftPageLoadSuccessEvent(title: widget.title));
+      widget.bloc.add(DraftEditLoadEvent(storyId: widget.storyId));
     }else{
-      newBloc.add(NewPostLoadSuccessEvent());
+      widget.bloc.add(NewPostEntryLoadEvent());
     }
     super.initState();
   }
@@ -52,33 +54,30 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
         title: const Text("New Post"),
         centerTitle: true,
       ),
-      body: BlocConsumer<NewEntryBloc,NewEntryState>(
-        bloc: newBloc,
-        listenWhen: (prev,curr) => curr is NewEntryState,
-        buildWhen: (prev,current) => current is !NewEntryActionState,
-        listener: (BuildContext context, NewEntryState state) {
+      body: BlocConsumer<DraftsBloc,DraftsState>(
+        bloc: widget.bloc,
+        listenWhen: (prev,curr) => curr is DraftsActionState,
+        buildWhen: (prev,current) => current is !DraftsActionState,
+        listener: (BuildContext context, DraftsState state) {
           if(state is NewPostSubmitState){
+            widget.bloc.add(DraftsListLoadEvent());
            Navigator.of(context).pop();
           }
         },
         builder: (context,state){
             switch(state.runtimeType){
-              case DraftPageLoadSuccessState :
+              case DraftEditLoadSuccessState :
                 return getSuccessUI(state);
-              case NewPostLoadSuccessState :
-                return getSuccessUI(state);
-              default :
-                const SizedBox();
+              default : return getSuccessUI(state);
             }
-            return Container();
         }
       )
     );
   }
 
-  Widget getSuccessUI(NewEntryState state){
+  Widget getSuccessUI(DraftsState state){
 
-    if(state is DraftPageLoadSuccessState){
+    if(state is DraftEditLoadSuccessState){
       _selectedValue = state.story.category;
       _tController.text = state.story.title;
       _aController.text = state.story.author;
@@ -168,38 +167,72 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            SizedBox(width: double.infinity,child: OutlinedButton(onPressed: (){
-              final data = StoryModel(_tController.text,
-                  _aController.text, _selectedValue??"", "", _sController.text,true);
-              newBloc.add(NewPostSubmitEvent(story: data));
-            },
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0)
-                  ),
-                ),
-                child: const Text("Draft",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 16)))),
-            SizedBox(width: double.infinity,child: ElevatedButton(onPressed: (){
-              final data = StoryModel(_tController.text,
-                  _aController.text, _selectedValue??"", "", _sController.text,false);
-              if(_formKey.currentState!.validate() && _selectedValue != ""){
-                newBloc.add(NewPostSubmitEvent(story: data));
+            SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                    onPressed: () {
+                      final data = StoryModel(
+                          _tController.text,
+                          _aController.text,
+                          _selectedValue ?? "",
+                          "",
+                          _sController.text,
+                          true,
+                          widget.storyId);
+                      if(widget.isDraft){
+                        widget.bloc.add(UpdateDraftSubmitEvent(story: data));
+                      }else{
+                        widget.bloc.add(NewPostSubmitEvent(story: data));
+                      }
 
-              }else{
-                if(_selectedValue == ""){
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Please select a category')),
-                  );
-                }
-              }
-            },
-                style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                    },
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0)),
                     ),
-                    backgroundColor: const Color.fromARGB(255, 32, 68, 114)
-                ),
-                child: const Text("Post",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 16)))),
+                    child: const Text("Draft",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16)))),
+            SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                    onPressed: () {
+                      final data = StoryModel(
+                          _tController.text,
+                          _aController.text,
+                          _selectedValue ?? "",
+                          "",
+                          _sController.text,
+                          false,
+                          widget.storyId);
+                      if (_formKey.currentState!.validate() &&
+                          _selectedValue != "") {
+                        if(widget.isDraft){
+                          widget.bloc.add(UpdateDraftSubmitEvent(story: data));
+                        }else{
+                          widget.bloc.add(NewPostSubmitEvent(story: data));
+                        }
+                      } else {
+                        if (_selectedValue == "") {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Please select a category')),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        backgroundColor:
+                            const Color.fromARGB(255, 32, 68, 114)),
+                    child: const Text("Post",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16)))),
           ],
         ),
       ),

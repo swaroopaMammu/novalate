@@ -1,58 +1,109 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
-class Draftscreen extends StatelessWidget {
-  const Draftscreen({super.key});
+import '../../bloc/drafts_bloc.dart';
+import '../widgets/stories_list_widget.dart';
+
+class DraftScreen extends StatefulWidget {
+  const DraftScreen({super.key,required this.bloc});
+  final DraftsBloc bloc;
+  @override
+  State<DraftScreen> createState() => _DraftScreenState();
+}
+
+class _DraftScreenState extends State<DraftScreen> {
+
+  String storyId = "hh";
+
+  @override
+  void initState() {
+    super.initState();
+   widget.bloc.add(DraftsListLoadEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
-    final title = "the boy";
+    return BlocConsumer<DraftsBloc,DraftsState>(
+        bloc: widget.bloc,
+        listenWhen: (prev,curr) => curr is DraftsActionState,
+        buildWhen: (prev,current) => current is !DraftsActionState,
+        builder: (context,state){
+          switch(state.runtimeType){
+            case DraftsListLoadingSuccessState : return getSuccessUI(state as DraftsListLoadingSuccessState);
+            case DraftsEmptyListState : return getEmptyListScreen();
+            default : SizedBox();
+          }
+          return Container();
+        },
+        listener: (BuildContext context, DraftsState state) {
+           if(state is DraftsAddNewButtonClickState ){
+             context.push('${NavigationConstants.ADD_NEW_ENTRY}/${false}/$storyId');
+           }
+           if(state is DraftListItemClickState){
+             context.push('${NavigationConstants.ADD_NEW_ENTRY}/${true}/${state.model.storyId}');
+           }
+           widget.bloc.add(DraftsListLoadEvent());
+        }
+    );
+  }
+
+  Widget getEmptyListScreen(){
     return Column(
       children: [
-      Expanded(
-        child: ListView.separated(
-        itemCount: 20,
-        itemBuilder: (context, index) {
-          return  GestureDetector(
-            onTap: (){
-              context.push('/${NavigationConstants.ADD_NEW_ENTRY}/${true}/${title}');
-            },
-            child: Card(
-              elevation: 4.0,  // Adds shadow for the card
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),  // Rounded corners
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Item $index',
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-            ),
-          );
-        },
-        separatorBuilder: (context, index) {
-          return const SizedBox(height: 10);
-        },
-            ),
-      ),
-       SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-                child: OutlinedButton(onPressed: (){
-                  context.go('${NavigationConstants.ADD_NEW_ENTRY}/${false}/${title}');
-                },
-                    style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        )
-                    ),
-                    child: const Text("Add New Post",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 16))),
-              )),
+        Expanded(
+          child: Center(
+            child: Text("No Drafts available"),
+          ),
+        ),
+        SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+              child: OutlinedButton(onPressed: (){
+                widget.bloc.add(AddNewPostButtonClickEvent());
+              },
+                  style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      )
+                  ),
+                  child: const Text("Add New Post",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 16))),
+            )),
+      ],
+    );
+  }
+
+  Widget getSuccessUI(DraftsListLoadingSuccessState state){
+    return Column(
+      children: [
+        Expanded(
+          child: StoriesListWidget(storyList:state.draftList,onTap: (int i){
+            widget.bloc.add(DraftsListItemClickEvent(model: state.draftList[i]));
+          },onDismiss: (int i){
+            widget.bloc.add(DraftsListItemRemoveEvent(storyId:  state.draftList[i].storyId));
+            widget.bloc.add(DraftsListLoadEvent());
+          })
+        ),
+        SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+              child: OutlinedButton(onPressed: (){
+                widget.bloc.add(AddNewPostButtonClickEvent());
+                widget.bloc.add(DraftsListLoadEvent());
+              },
+                  style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      )
+                  ),
+                  child: const Text("Add New Post",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 16))),
+            )),
       ],
     );
   }
