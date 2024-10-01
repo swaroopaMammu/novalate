@@ -3,25 +3,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../bloc/home_bloc.dart';
+import '../../utils/AppConstants.dart';
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key,required this.child});
+  const HomeScreen({super.key,required this.child, required this.bloc});
   final Widget child;
+  final HomeBloc bloc;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   int bottomBarIndex = 0;
-
-
-
-  final List<String> _routes = ['/home', '/feeds', '/drafts'];
+  final _fController = TextEditingController();
 
   void _onTap(int index) {
       setState(() {
         bottomBarIndex = index;
       });
-    context.go(_routes[bottomBarIndex]); // Navigate to selected route
+    context.go(AppConstants.routes[bottomBarIndex]); // Navigate to selected route
   }
 
   @override
@@ -33,13 +34,42 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    _fController.dispose();
+    super.dispose();
+  }
+
+  void _showAlertDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("${AppConstants.bottomNav[bottomBarIndex]} Info"),
+          content: Text(AppConstants.contentList[bottomBarIndex]),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   AppBar getAppBar(){
     return AppBar(
       backgroundColor: const Color.fromARGB(255, 17, 68, 117),
       title: const Text("Choice of yours",style: TextStyle(color: Colors.white),),
       centerTitle: true,
       actions: [
-        IconButton(onPressed: (){}, icon: const Icon(Icons.info_outline,color: Colors.white))
+        IconButton(onPressed: (
+            ){
+          _showAlertDialog(context);
+        }, icon: const Icon(Icons.info_outline,color: Colors.white))
       ],
       elevation: 20.0,
       bottom: PreferredSize(
@@ -48,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 10.0),
             child: Expanded(
               child: TextField(
+                controller: _fController,
                 decoration: InputDecoration(
                   hintText: "Search your choice here",
                   contentPadding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 10.0),
@@ -65,7 +96,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 2.0,
                     ),
                   ),
-                  prefixIcon: IconButton(onPressed: (){}, icon: const Icon(Icons.search)),
+                  prefixIcon: IconButton(onPressed: (){
+                    widget.bloc.add(FilterSearchClickedEvent(category: AppConstants.bottomNav[bottomBarIndex], query: _fController.text));
+                  }, icon: const Icon(Icons.search)),
                   fillColor: Colors.white,
                   filled: true,
                 ),
@@ -80,18 +113,18 @@ class _HomeScreenState extends State<HomeScreen> {
    return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       showUnselectedLabels: false,
-      backgroundColor:Color.fromARGB(255, 17, 68, 117),
+      backgroundColor:const Color.fromARGB(255, 17, 68, 117),
       selectedIconTheme: const IconThemeData(color: Colors.white),
       unselectedIconTheme: const IconThemeData(color: Colors.black),
       onTap: _onTap,
       currentIndex: bottomBarIndex,
-      items: const[
-        BottomNavigationBarItem(icon: Icon(Icons.home),
-          label: "Home",
-        ), BottomNavigationBarItem(icon: Icon(Icons.feed),
-            label: "Feeds"
-        ), BottomNavigationBarItem(icon: Icon(Icons.drafts),
-            label: "Drafts"
+      items: [
+        BottomNavigationBarItem(icon: const Icon(Icons.home),
+          label: AppConstants.bottomNav[0],
+        ), BottomNavigationBarItem(icon: const Icon(Icons.feed),
+            label: AppConstants.bottomNav[1]
+        ), BottomNavigationBarItem(icon: const Icon(Icons.drafts),
+            label: AppConstants.bottomNav[2]
         )
       ],
     );

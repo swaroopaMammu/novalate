@@ -41,7 +41,9 @@ class _StoryListScreenState extends State<StoryListScreen> {
                 final s = state as StoryListLoadSuccess;
                 return    StoriesListWidget(storyList:s.storyList,onTap: (int i){
                   storyBloc.add(StoryClickEvent(storyId: s.storyList[i].storyId));
-                },onDismiss: (int i){});
+                },onDismiss: (int i){
+                  storyBloc.add(StoryRemoveClickEvent(storyId: s.storyList[i].storyId));
+                });
               }
               case StoryListLoadEmpty:{
                 return Center(

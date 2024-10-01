@@ -22,6 +22,15 @@ class DraftListItemClickState extends DraftsActionState{
 
 // new entry screen
 
+class DraftAddImageButtonClickState extends DraftsActionState{
+  DraftAddImageButtonClickState();
+}
+
+class CategoryOptionState extends DraftsActionState{
+  String option;
+  CategoryOptionState({required this.option});
+}
+
 class DraftEditLoadSuccessState extends DraftsState{
   final StoryModel story;
   DraftEditLoadSuccessState({

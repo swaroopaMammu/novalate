@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
 import '../../bloc/drafts_bloc.dart';
+import '../../bloc/home_bloc.dart';
 import '../widgets/stories_list_widget.dart';
 
 class DraftScreen extends StatefulWidget {
-  const DraftScreen({super.key,required this.bloc});
+  const DraftScreen({super.key,required this.bloc,required this.hBloc});
   final DraftsBloc bloc;
+  final HomeBloc hBloc;
   @override
   State<DraftScreen> createState() => _DraftScreenState();
 }
@@ -32,7 +34,7 @@ class _DraftScreenState extends State<DraftScreen> {
         buildWhen: (prev,current) => current is !DraftsActionState,
         builder: (context,state){
           switch(state.runtimeType){
-            case DraftsListLoadingSuccessState : return getSuccessUI(state as DraftsListLoadingSuccessState);
+            case DraftsListLoadingSuccessState  : return getSuccessUI(state as DraftsListLoadingSuccessState);
             case DraftsEmptyListState : return getEmptyListScreen();
             default : SizedBox();
           }
@@ -85,7 +87,6 @@ class _DraftScreenState extends State<DraftScreen> {
             widget.bloc.add(DraftsListItemClickEvent(model: state.draftList[i]));
           },onDismiss: (int i){
             widget.bloc.add(DraftsListItemRemoveEvent(storyId:  state.draftList[i].storyId));
-            widget.bloc.add(DraftsListLoadEvent());
           })
         ),
         SizedBox(
@@ -95,7 +96,6 @@ class _DraftScreenState extends State<DraftScreen> {
               padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
               child: OutlinedButton(onPressed: (){
                 widget.bloc.add(AddNewPostButtonClickEvent());
-                widget.bloc.add(DraftsListLoadEvent());
               },
                   style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(

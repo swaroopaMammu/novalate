@@ -12,6 +12,8 @@ import 'package:novalate/ui/screens/StoryReaderScreen.dart';
 import 'package:novalate/utils/AppConstants.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
+import 'bloc/home_bloc.dart';
+
 void main() async{
  WidgetsFlutterBinding.ensureInitialized();
    await Firebase.initializeApp();
@@ -27,6 +29,7 @@ class BaseWidget extends StatefulWidget {
 
 class _BaseWidgetState extends State<BaseWidget> {
   final draftBloc = DraftsBloc();
+  final homeBloc = HomeBloc();
 
   @override
   Widget build(BuildContext context) {
@@ -41,24 +44,24 @@ class _BaseWidgetState extends State<BaseWidget> {
 
         ShellRoute(
           builder: (context, state, child) {
-            return HomeScreen(child: child); // Wrapper with bottom navigation bar
+            return HomeScreen(child: child,bloc: homeBloc); // Wrapper with bottom navigation bar
           }, routes: [
           GoRoute(
             path: '/home',
             pageBuilder: (context, state) {
-              return const MaterialPage(child: CategoryScreen());
+              return  MaterialPage(child: CategoryScreen(bloc: homeBloc));
             },
           ),
           GoRoute(
             path: '/feeds',
             pageBuilder: (context, state) {
-              return const MaterialPage(child: FeedScreen());
+              return  MaterialPage(child: FeedScreen(bloc: homeBloc,));
             },
           ),
           GoRoute(
             path: '/drafts',
             pageBuilder: (context, state) {
-              return MaterialPage(child: DraftScreen(bloc: draftBloc));
+              return MaterialPage(child: DraftScreen(bloc: draftBloc,hBloc: homeBloc));
             },
           ),
         ],

@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:developer';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:logger/logger.dart';
 import 'package:novalate/models/data_model.dart';
 import 'package:novalate/utils/AppConstants.dart';
 
+import '../utils/database_utils.dart';
 import '../utils/firebase_fire_store.dart';
 
 part '../event/drafts_event.dart';
@@ -23,29 +23,14 @@ class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
     on<NewPostEntryLoadEvent>(newPostEntryLoadEvent);
     on<NewPostSubmitEvent>(newPostSubmitEvent);
     on<UpdateDraftSubmitEvent>(updateDraftSubmitEvent);
+    on<AddImageButtonClickEvent>(addImageButtonClickEvent);
+    on<SelectCategoryOption>(selectCategoryOption);
 
   }
 
 
   FutureOr<void> draftInitialLoadEvent(DraftsListLoadEvent event, Emitter<DraftsState> emit) async{
-    List<Map<String, dynamic>> dataList =  await db.read();
-    List<StoryModel> draftList =  [];
-    List<StoryModel> storyList =  [];
-    for(var d in dataList){
-      final m = StoryModel(d["title"], d["author"], d["category"],
-          d["image"], d["story"], d["isDraft"],d["storyId"]);
-      if(d["isDraft"] == true){
-        draftList.add(m);
-      }else{
-        storyList.add(m);
-      }
-    }
-    AppConstants.draftList.clear();
-    AppConstants.feedsList.clear();
-    AppConstants.draftList.addAll(draftList);
-    AppConstants.feedsList.addAll(storyList);
-    Logger().d("drafts : ${AppConstants.draftList}");
-    Logger().d("drafts feeds : ${AppConstants.feedsList}");
+     await getDataFromFireStore();
     if(AppConstants.draftList.isEmpty) {
       emit(DraftsEmptyListState());
     }
@@ -58,8 +43,16 @@ class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
     emit(DraftListItemClickState(model: event.model));
   }
 
-  FutureOr<void> draftsListItemRemoveEvent(DraftsListItemRemoveEvent event, Emitter<DraftsState> emit) {
-    db.delete(event.storyId);
+  FutureOr<void> draftsListItemRemoveEvent(DraftsListItemRemoveEvent event, Emitter<DraftsState> emit) async{
+    await db.delete(event.storyId);
+    List<StoryModel> newList = [];
+    for(var item in AppConstants.draftList){
+      if(item.storyId != event.storyId){
+        newList.add(item);
+      }
+    }
+    AppConstants.draftList.clear();
+    AppConstants.draftList.addAll(newList);
     emit(DraftsListLoadingSuccessState(draftList: AppConstants.draftList));
   }
 
@@ -79,13 +72,21 @@ class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
     emit(NewEntryLoadSuccessState());
   }
 
-  FutureOr<void> newPostSubmitEvent(NewPostSubmitEvent event, Emitter<DraftsState> emit) {
-    db.create(event.story);
+  FutureOr<void> newPostSubmitEvent(NewPostSubmitEvent event, Emitter<DraftsState> emit) async{
+    await db.create(event.story,event.imageUrl);
     emit(NewPostSubmitState(result:"success"));
   }
 
-  FutureOr<void> updateDraftSubmitEvent(UpdateDraftSubmitEvent event, Emitter<DraftsState> emit) {
-    db.update(event.story);
+  FutureOr<void> updateDraftSubmitEvent(UpdateDraftSubmitEvent event, Emitter<DraftsState> emit) async{
+    await db.update(event.story,event.imageUrl);
     emit(NewPostSubmitState(result:"success"));
+  }
+
+  FutureOr<void> addImageButtonClickEvent(AddImageButtonClickEvent event, Emitter<DraftsState> emit) {
+    emit(DraftAddImageButtonClickState());
+  }
+
+  FutureOr<void> selectCategoryOption(SelectCategoryOption event, Emitter<DraftsState> emit) {
+    emit(CategoryOptionState(option: event.option));
   }
 }

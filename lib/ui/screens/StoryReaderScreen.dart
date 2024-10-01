@@ -65,7 +65,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                      offset: Offset(4, 4),
                    ),
                  ],),
-               child: Image.asset('assets/images/spirited_away.jpeg', fit: BoxFit.cover)),
+               child:Image.network(story.image,fit: BoxFit.cover)),
            Text(story.story
                ,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 16),
                textAlign: TextAlign.justify,

@@ -2,16 +2,15 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:novalate/utils/AppConstants.dart';
-import 'package:novalate/utils/firebase_fire_store.dart';
 
 import '../models/data_model.dart';
+import '../utils/database_utils.dart';
 
 part '../event/feed_event.dart';
 part '../state/feed_state.dart';
 
 class FeedBloc extends Bloc<FeedEvent, FeedState> {
 
-  final db = DatabaseService();
   FeedBloc() : super(FeedInitial()) {
     on<FeedsInitialLoadEvent>(feedsInitialLoadEvent);
     on<FeedsClickEvent>(feedsClickEvent);
@@ -19,7 +18,8 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
   }
 
 
-  FutureOr<void> feedsInitialLoadEvent(FeedsInitialLoadEvent event, Emitter<FeedState> emit) {
+  FutureOr<void> feedsInitialLoadEvent(FeedsInitialLoadEvent event, Emitter<FeedState> emit)async{
+    await getDataFromFireStore();
     if(AppConstants.feedsList.isEmpty){
       emit(FeedInitialEmptyState());
     }else{

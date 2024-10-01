@@ -20,6 +20,15 @@ class AddNewPostButtonClickEvent extends DraftsEvent{
 }
 // new entry screen
 
+class AddImageButtonClickEvent extends DraftsEvent{
+  AddImageButtonClickEvent();
+}
+
+class SelectCategoryOption extends DraftsEvent{
+  String option;
+  SelectCategoryOption({required this.option});
+}
+
 class DraftEditLoadEvent extends DraftsEvent{
   final String storyId ;
   DraftEditLoadEvent({
@@ -33,14 +42,18 @@ class NewPostEntryLoadEvent extends DraftsEvent{
 
 class NewPostSubmitEvent extends DraftsEvent{
   final StoryModel story;
+  final File? imageUrl;
   NewPostSubmitEvent({
-    required this.story
+    required this.story,
+    required this.imageUrl
   });
 }
 
 class UpdateDraftSubmitEvent extends DraftsEvent{
   final StoryModel story;
+  final File? imageUrl;
   UpdateDraftSubmitEvent({
-    required this.story
+    required this.story,
+    required this.imageUrl
   });
 }

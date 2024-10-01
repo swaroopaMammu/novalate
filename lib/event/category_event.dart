@@ -20,3 +20,8 @@ class StoryClickEvent extends CategoryEvent{
   final String storyId;
   StoryClickEvent({required this.storyId});
 }
+
+class StoryRemoveClickEvent extends CategoryEvent{
+  final String storyId;
+  StoryRemoveClickEvent({required this.storyId});
+}
