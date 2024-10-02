@@ -23,7 +23,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
 
   FutureOr<void> categoryInitialLoadEvent(CategoryInitialLoadEvent event, Emitter<CategoryState> emit) async{
     await getDataFromFireStore();
-    emit(CategoryInitialState());
+      emit(CategoryInitialState());
   }
 
   FutureOr<void> categoryCardClickEvent(CategoryCardClickEvent event, Emitter<CategoryState> emit) {

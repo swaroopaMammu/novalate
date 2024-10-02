@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:novalate/bloc/category_bloc.dart';
 import 'package:novalate/bloc/drafts_bloc.dart';
+import 'package:novalate/bloc/feed_bloc.dart';
 import 'package:novalate/ui/screens/AddNewEntryScreen.dart';
 import 'package:novalate/ui/screens/CategoryScreen.dart';
 import 'package:novalate/ui/screens/DraftScreen.dart';
@@ -29,7 +31,8 @@ class BaseWidget extends StatefulWidget {
 
 class _BaseWidgetState extends State<BaseWidget> {
   final draftBloc = DraftsBloc();
-  final homeBloc = HomeBloc();
+  final feedBloc = FeedBloc();
+  final categoryBloc = CategoryBloc();
 
   @override
   Widget build(BuildContext context) {
@@ -44,24 +47,24 @@ class _BaseWidgetState extends State<BaseWidget> {
 
         ShellRoute(
           builder: (context, state, child) {
-            return HomeScreen(child: child,bloc: homeBloc); // Wrapper with bottom navigation bar
+            return HomeScreen(child: child,cBloc: categoryBloc,dBloc: draftBloc,fBloc: feedBloc); // Wrapper with bottom navigation bar
           }, routes: [
           GoRoute(
             path: '/home',
             pageBuilder: (context, state) {
-              return  MaterialPage(child: CategoryScreen(bloc: homeBloc));
+              return  MaterialPage(child: CategoryScreen());
             },
           ),
           GoRoute(
             path: '/feeds',
             pageBuilder: (context, state) {
-              return  MaterialPage(child: FeedScreen(bloc: homeBloc,));
+              return  MaterialPage(child: FeedScreen(feedBloc:feedBloc));
             },
           ),
           GoRoute(
             path: '/drafts',
             pageBuilder: (context, state) {
-              return MaterialPage(child: DraftScreen(bloc: draftBloc,hBloc: homeBloc));
+              return MaterialPage(child: DraftScreen(bloc: draftBloc));
             },
           ),
         ],

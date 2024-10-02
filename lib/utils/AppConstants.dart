@@ -13,7 +13,6 @@ class AppConstants {
 
   static List<StoryModel> draftList = [];
   static List<StoryModel> feedsList = [];
-  static List<StoryModel> storyList = [];
   static const List<String> routes = ['/home', '/feeds', '/drafts'];
   static const List<String> bottomNav = ['HOME', 'FEEDS', 'DRAFTS'];
   static const List<String> contentList = ['Shows all the works filtered by categories',

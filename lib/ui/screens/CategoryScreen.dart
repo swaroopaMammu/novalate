@@ -6,11 +6,9 @@ import 'package:novalate/bloc/category_bloc.dart';
 import 'package:novalate/utils/AppConstants.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
-import '../../bloc/home_bloc.dart';
 
 class CategoryScreen extends StatefulWidget {
-  const CategoryScreen({super.key,required this.bloc});
-  final HomeBloc bloc;
+  const CategoryScreen({super.key});
   @override
   State<CategoryScreen> createState() => _CategoryScreenState();
 }

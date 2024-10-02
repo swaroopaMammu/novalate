@@ -5,28 +5,26 @@ import 'package:go_router/go_router.dart';
 import 'package:novalate/bloc/feed_bloc.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
-import '../../bloc/home_bloc.dart';
-
 class FeedScreen extends StatefulWidget {
-  const FeedScreen({super.key, required this.bloc});
-  final HomeBloc bloc;
+  const FeedScreen({super.key, required this.feedBloc});
+  final FeedBloc feedBloc;
   @override
   State<FeedScreen> createState() => _FeedScreenState();
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  final feedBloc = FeedBloc();
+
 
   @override
   void initState() {
     super.initState();
-    feedBloc.add(FeedsInitialLoadEvent());
+    widget.feedBloc.add(FeedsInitialLoadEvent(searchQ:''));
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<FeedBloc,FeedState>(
-       bloc: feedBloc,
+       bloc: widget.feedBloc,
         listenWhen: (prev,curr) => curr is FeedActionState,
         buildWhen: (prev,current) => current is !FeedActionState,
         builder: (context,state){
@@ -57,7 +55,7 @@ class _FeedScreenState extends State<FeedScreen> {
       itemBuilder: (context, index) {
         return  GestureDetector(
           onTap: (){
-           feedBloc.add(FeedsClickEvent(storyId:state.storyList[index].storyId ));
+            widget.feedBloc.add(FeedsClickEvent(storyId:state.storyList[index].storyId ));
           },
           child: Card(
             elevation: 4.0,

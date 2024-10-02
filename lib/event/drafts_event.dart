@@ -3,7 +3,8 @@ part of '../bloc/drafts_bloc.dart';
 abstract class DraftsEvent {}
 
 class DraftsListLoadEvent extends DraftsEvent{
-  DraftsListLoadEvent();
+  final String searchQ;
+  DraftsListLoadEvent({required this.searchQ});
 }
 
 class DraftsListItemClickEvent extends DraftsEvent{

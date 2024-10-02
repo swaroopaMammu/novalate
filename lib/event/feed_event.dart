@@ -3,7 +3,8 @@ part of '../bloc/feed_bloc.dart';
 abstract class FeedEvent {}
 
 class FeedsInitialLoadEvent extends FeedEvent{
-  FeedsInitialLoadEvent();
+  final String searchQ;
+  FeedsInitialLoadEvent({required this.searchQ});
 }
 
 class FeedsClickEvent extends FeedEvent{

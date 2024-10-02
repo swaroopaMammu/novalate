@@ -5,13 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
 import '../../bloc/drafts_bloc.dart';
-import '../../bloc/home_bloc.dart';
 import '../widgets/stories_list_widget.dart';
 
 class DraftScreen extends StatefulWidget {
-  const DraftScreen({super.key,required this.bloc,required this.hBloc});
+  const DraftScreen({super.key,required this.bloc});
   final DraftsBloc bloc;
-  final HomeBloc hBloc;
   @override
   State<DraftScreen> createState() => _DraftScreenState();
 }
@@ -23,7 +21,7 @@ class _DraftScreenState extends State<DraftScreen> {
   @override
   void initState() {
     super.initState();
-   widget.bloc.add(DraftsListLoadEvent());
+   widget.bloc.add(DraftsListLoadEvent(searchQ:""));
   }
 
   @override
@@ -47,7 +45,7 @@ class _DraftScreenState extends State<DraftScreen> {
            if(state is DraftListItemClickState){
              context.push('${NavigationConstants.ADD_NEW_ENTRY}/${true}/${state.model.storyId}');
            }
-           widget.bloc.add(DraftsListLoadEvent());
+           widget.bloc.add(DraftsListLoadEvent(searchQ: ""));
         }
     );
   }

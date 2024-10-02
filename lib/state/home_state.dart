@@ -7,8 +7,7 @@ final class HomeInitial extends HomeState {}
 
 final class FilterSearchClickedState extends HomeActionState {
   final String query;
-  final String category;
-  FilterSearchClickedState({required this.query, required this.category});
+  FilterSearchClickedState({required this.query});
 }
 final class InfoAlertClickedState extends HomeActionState {
   final String category;

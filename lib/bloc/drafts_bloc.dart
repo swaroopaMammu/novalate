@@ -35,7 +35,16 @@ class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
       emit(DraftsEmptyListState());
     }
     else{
-      emit(DraftsListLoadingSuccessState(draftList: AppConstants.draftList));
+      if(event.searchQ != ""){
+        final list = getFilteredDraftList(event.searchQ);
+        if(list.isEmpty){
+          emit(DraftsEmptyListState());
+        }else{
+          emit(DraftsListLoadingSuccessState(draftList: getFilteredDraftList(event.searchQ)));
+        }
+      }else{
+        emit(DraftsListLoadingSuccessState(draftList: AppConstants.draftList));
+      }
     }
   }
 

@@ -2,14 +2,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../bloc/home_bloc.dart';
+import 'package:novalate/bloc/category_bloc.dart';
+import 'package:novalate/bloc/drafts_bloc.dart';
+import 'package:novalate/bloc/feed_bloc.dart';
 import '../../utils/AppConstants.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key,required this.child, required this.bloc});
+  const HomeScreen({super.key,required this.child,
+    required this.cBloc,required this.dBloc,required this.fBloc});
   final Widget child;
-  final HomeBloc bloc;
+  final CategoryBloc cBloc;
+  final DraftsBloc dBloc;
+  final FeedBloc fBloc;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -21,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onTap(int index) {
       setState(() {
         bottomBarIndex = index;
+        _fController.text = "";
       });
     context.go(AppConstants.routes[bottomBarIndex]); // Navigate to selected route
   }
@@ -72,40 +77,60 @@ class _HomeScreenState extends State<HomeScreen> {
         }, icon: const Icon(Icons.info_outline,color: Colors.white))
       ],
       elevation: 20.0,
-      bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 10.0),
-            child: Expanded(
-              child: TextField(
-                controller: _fController,
-                decoration: InputDecoration(
-                  hintText: "Search your choice here",
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 10.0),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: const BorderSide(
-                      color: Colors.white,
-                      width: 2.0,
-                    ),
+      bottom: IsHomeOrNot()
+    );
+  }
+
+  PreferredSizeWidget IsHomeOrNot(){
+    if(bottomBarIndex ==0){
+    return  const PreferredSize(
+        preferredSize: Size.fromHeight(60), child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+        child: Text("\" Novalate inspires the storyteller within \"",
+        style: TextStyle(color: Colors.grey,fontWeight: FontWeight.w600,fontSize: 20),)),);
+    }else{
+      return getSearchBar();
+    }
+  }
+
+  PreferredSizeWidget getSearchBar(){
+    return PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 10.0),
+          child: Expanded(
+            child: TextField(
+              controller: _fController,
+              decoration: InputDecoration(
+                hintText: "Search your choice here",
+                contentPadding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 10.0),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(
+                    color: Colors.white,
+                    width: 2.0,
                   ),
-                  enabledBorder : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: const BorderSide(
-                      color: Colors.white,
-                      width: 2.0,
-                    ),
-                  ),
-                  prefixIcon: IconButton(onPressed: (){
-                    widget.bloc.add(FilterSearchClickedEvent(category: AppConstants.bottomNav[bottomBarIndex], query: _fController.text));
-                  }, icon: const Icon(Icons.search)),
-                  fillColor: Colors.white,
-                  filled: true,
                 ),
+                enabledBorder : OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(
+                    color: Colors.white,
+                    width: 2.0,
+                  ),
+                ),
+                prefixIcon: IconButton(onPressed: (){
+                  switch(bottomBarIndex){
+                    case 1: widget.fBloc.add(FeedsInitialLoadEvent(searchQ: _fController.text));
+                    case 2: widget.dBloc.add(DraftsListLoadEvent(searchQ: _fController.text));
+                  }
+
+                }, icon: const Icon(Icons.search)),
+                fillColor: Colors.white,
+                filled: true,
               ),
             ),
-          )
-      ),
+          ),
+        )
     );
   }
 

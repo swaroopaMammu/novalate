@@ -23,7 +23,16 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
     if(AppConstants.feedsList.isEmpty){
       emit(FeedInitialEmptyState());
     }else{
-      emit(FeedInitialLoadSuccessState(storyList: AppConstants.feedsList));
+      if(event.searchQ != ""){
+        final list = getFilteredFeedsList(event.searchQ);
+        if(list.isEmpty){
+          emit(FeedInitialEmptyState());
+        }else{
+          emit(FeedInitialLoadSuccessState(storyList: getFilteredFeedsList(event.searchQ)));
+        }
+      }else{
+        emit(FeedInitialLoadSuccessState(storyList: AppConstants.feedsList));
+     }
     }
   }
 
