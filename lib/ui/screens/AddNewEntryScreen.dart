@@ -10,29 +10,50 @@ import 'package:novalate/models/data_model.dart';
 import 'package:novalate/utils/firebase_fire_store.dart';
 
 import '../../utils/AppConstants.dart';
+import '../widgets/bordered_text_field.dart';
+import '../widgets/boxed_button.dart';
+import '../widgets/boxed_drop_down.dart';
 
 class AddNewEntryScreen extends StatefulWidget {
   final bool isDraft;
   final String storyId;
-  final DraftsBloc bloc;
-  const AddNewEntryScreen({super.key,required this.isDraft, required this.storyId, required this.bloc});
+  final DraftsBloc dBloc;
+  const AddNewEntryScreen({super.key,required this.isDraft, required this.storyId,required this.dBloc});
 
   @override
   State<AddNewEntryScreen> createState() => _AddNewEntryScreenState();
 }
 
 class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
-  final _formKey = GlobalKey<FormState>();
-   String? _selectedValue ;
 
-  final _tController = TextEditingController();
-  final _aController = TextEditingController();
-  final _sController = TextEditingController();
-  bool _isButtonEnabled = true;
-
-  final db = DatabaseService();
+  late final GlobalKey<FormState> _formKey;
+  late final TextEditingController _tController;
+  late final TextEditingController _aController;
+  late final TextEditingController _sController;
+  late bool _isButtonEnabled;
+  late final DatabaseService db;
+  late DraftsBloc dBloc;
+  String? _selectedValue;
 
   File? imageFile;
+
+  @override
+  void initState() {
+    _formKey = GlobalKey<FormState>();
+    _tController = TextEditingController();
+    _aController = TextEditingController();
+    _sController = TextEditingController();
+    _isButtonEnabled = true;
+    dBloc = widget.dBloc;
+    db = DatabaseService();
+
+    if (widget.isDraft) {
+      dBloc.add(DraftEditLoadEvent(storyId: widget.storyId));
+    } else {
+      dBloc.add(NewPostEntryLoadEvent());
+    }
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -42,54 +63,47 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
     super.dispose();
   }
 
-  Future<void> getImageFromGallery() async{
+  Future<void> getImageFromGallery() async {
     var img = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if(img != null){
-        imageFile = File(img.path);
+    if (img != null) {
+      imageFile = File(img.path);
     }
-  }
-
-  @override
-  void initState() {
-    if(widget.isDraft){
-      widget.bloc.add(DraftEditLoadEvent(storyId: widget.storyId));
-    }else{
-      widget.bloc.add(NewPostEntryLoadEvent());
-    }
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("New Post"),
-        centerTitle: true,
-      ),
-      body: BlocConsumer<DraftsBloc,DraftsState>(
-        bloc: widget.bloc,
-        listenWhen: (prev,curr) => curr is DraftsActionState,
-        buildWhen: (prev,current) => current is !DraftsActionState,
-        listener: (BuildContext context, DraftsState state) {
-          if(state is NewPostSubmitState){
-            _isButtonEnabled = true;
-           Navigator.of(context).pop();
-          }
-          if(state is DraftAddImageButtonClickState){
-            getImageFromGallery();
-          }
-          if(state is CategoryOptionState){
-            _selectedValue = state.option;
-          }
-        },
-        builder: (context,state){
-            switch(state.runtimeType){
-              case DraftEditLoadSuccessState :
-                return getSuccessUI(state);
-              default : return getSuccessUI(state);
+        appBar: AppBar(
+          title: const Text(AppConstants.NEW_POST),
+          centerTitle: true,
+        ),
+        body: BlocConsumer<DraftsBloc, DraftsState>(
+            bloc: dBloc,
+            listenWhen: (prev, curr) => curr is DraftsActionState,
+            buildWhen: (prev, current) => current is! DraftsActionState,
+            listener: (BuildContext context, DraftsState state) {
+              if (state is NewPostSubmitState) {
+                _isButtonEnabled = true;
+                Navigator.of(context).pop();
+              }
+              if (state is DraftAddImageButtonClickState) {
+                getImageFromGallery();
+              }
+              if (state is CategoryOptionState) {
+                setState(() {
+                  _selectedValue = state.option;
+                });
+              }
+            },
+            builder: (context, state) {
+              switch (state.runtimeType) {
+                case DraftEditLoadSuccessState :
+                  return getSuccessUI(state);
+                default :
+                  return getSuccessUI(state);
+              }
             }
-        }
-      )
+        )
     );
   }
 
@@ -107,97 +121,47 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
         key: _formKey,
         child: Column(
           children: [
-            getTextInput(label: "Title",hint:"Enter title here",error: "Please enter your title",controller: _tController ),
+            BorderedTextField(label: "Title",hint:"Enter title here",error: "Please enter your title",controller: _tController ,isLongTextField: false),
             const SizedBox(height: 10),
-            getTextInput(label: "Author",hint:"Enter Author name here",error: "Please enter your author name",controller: _aController ),
+            BorderedTextField(label: "Author",hint:"Enter Author name here",error: "Please enter your author name",controller: _aController,isLongTextField: false ),
             const SizedBox(height: 10),
-            getCategoryAndImage(),
-            const SizedBox(height: 10),
-            Expanded(
-              child: TextFormField(
-                controller: _sController,
-                keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.newline,
-                textAlignVertical: TextAlignVertical.top,
-                expands: true,
-                maxLines: null,
-                decoration: InputDecoration(
-                    hintText: "Enter content here",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: const BorderSide(width: 2.0)
-                    )),
-                validator: (value) {
-
-                  if (value == null || value.isEmpty) {
-                    return "Please enter your  content";
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-
-                },
-              ),
+          Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                    child:
+                    BoxedDropDown(selectedValue: _selectedValue, dropDownList: AppConstants.dropdownItems,onSelect: (String? newValue){
+                      dBloc.add(SelectCategoryOption(option: newValue??""));
+                    }),
+                ),
+                Expanded(
+                  child:
+                  BoxedButton(buttonText: "Add Image",width: null,height: 48,fillColor: const Color.fromARGB(255, 32, 68, 114),
+                    isButtonEnabled: true,textColor: Colors.white,padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0), onClick: (){
+                    dBloc.add(AddImageButtonClickEvent());
+                  },),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
-            SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                    onPressed: () {
-                      if(_isButtonEnabled){
-                        setState(() {
-                          _isButtonEnabled = false;
-                        });
-                        final data = StoryModel(
-                            _tController.text,
-                            _aController.text,
-                            _selectedValue ?? "",
-                            "",
-                            _sController.text,
-                            true,
-                            widget.storyId);
-                        validateFieldsForDraft(data);
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0)),
-                    ),
-                    child:  Text("Draft",
-                        style: TextStyle(
-                            color:_isButtonEnabled? Colors.black : Colors.grey ,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16)))),
-            SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                    onPressed: () {
-                      if(_isButtonEnabled){
-                        setState(() {
-                          _isButtonEnabled = false;
-                        });
-                        final data = StoryModel(
-                            _tController.text,
-                            _aController.text,
-                            _selectedValue ?? "",
-                            "",
-                            _sController.text,
-                            false,
-                            widget.storyId);
-                        validateFieldsForPost(data);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        backgroundColor:
-                            const Color.fromARGB(255, 32, 68, 114)),
-                    child: Text("Post",
-                        style: TextStyle(
-                            color: _isButtonEnabled ?  Colors.white:Colors.grey,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16)))),
+            Expanded(
+              child: BorderedTextField(label: null,hint:"Enter content here",error: "Please enter your  content",controller: _sController,isLongTextField: true ),
+            ),
+            const SizedBox(height: 10),
+            BoxedButton(buttonText: "Draft",width: double.infinity,height: null,fillColor: null,
+              isButtonEnabled: _isButtonEnabled, textColor: Colors.black,padding: const EdgeInsets.all(0.0),
+              onClick: (){
+                if(_isButtonEnabled){
+                  validateFieldsForDraft();
+                }
+              },),
+            BoxedButton(buttonText: "Post",padding: const EdgeInsets.all(0.0),width: double.infinity,height: null,fillColor: const Color.fromARGB(255, 32, 68, 114),
+              isButtonEnabled: _isButtonEnabled, textColor: Colors.white,
+              onClick: (){
+                if(_isButtonEnabled){
+                  validateFieldsForDraft();
+                }
+              },),
           ],
         ),
       ),
@@ -205,107 +169,55 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
   }
 
 
-  validateFieldsForDraft(StoryModel data){
+  validateFieldsForDraft(){
     if (_selectedValue == null || _tController.text == "") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Category or title can not be blank')),
-      );
-    } else {
-      if (widget.isDraft) {
-        widget.bloc.add(UpdateDraftSubmitEvent(
-            story: data, imageUrl: imageFile));
-      } else {
-        widget.bloc.add(NewPostSubmitEvent(
-            story: data, imageUrl: imageFile));
-      }
+      return _CallErrorSnackBar();
     }
+      final data = StoryModel(
+          _tController.text,
+          _aController.text,
+          _selectedValue ?? "",
+          "",
+          _sController.text,
+          true,
+          widget.storyId);
+      _callSubmitRequest(data);
+
   }
 
-  validateFieldsForPost(StoryModel data){
-    if(_selectedValue == null || _selectedValue == ""){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a category')),
-      );
-    } else {
-      if (widget.isDraft && imageFile != null && _formKey.currentState!.validate() ) {
-        widget.bloc.add(
-            UpdateDraftSubmitEvent(story: data, imageUrl: imageFile));
-      } else if (_formKey.currentState!.validate() && imageFile != null) {
-        widget.bloc.add(NewPostSubmitEvent(story: data, imageUrl: imageFile));
-      }
-    }
-  }
-
-  Widget getCategoryAndImage(){
-    return   Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(color:  const Color.fromARGB(
-                  255, 118, 113, 123), width: 1.0),
-              // Border color and width
-              borderRadius:
-              BorderRadius.circular(8.0), // Rounded corners
-            ),
-            child: DropdownButton(
-              underline: const SizedBox(),
-              value: _selectedValue,
-              hint: const Text("Select a category"),
-              items: AppConstants.dropdownItems.map((String item){
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                );
-              }).toList(), onChanged: (String? newValue) {
-              widget.bloc.add(SelectCategoryOption(option: newValue??""));
-            },),
-          ),
-        ),
-
-        Expanded(
-          child: SizedBox(
-              height: 48,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
-                child: OutlinedButton(onPressed: (){
-                  widget.bloc.add(AddImageButtonClickEvent());
-                },
-                    style: OutlinedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 32, 68, 114),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        )
-                    ),
-                    child: const Text("Add Image",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 16))),
-              )),
-        ),
-      ],
+  _CallErrorSnackBar(){
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Category or title can not be blank')),
     );
   }
 
-  Widget getTextInput({required String label,required String hint,required String error, required TextEditingController controller}){
-    return   TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: const BorderSide(width: 2.0)
-          )
-      ),
-      validator: (value) {
-        if((value == null || value.isEmpty)) {
-          return error;
-        }
-        return null;
-      },
-      onSaved: (value) {
-
-      },
-    );
+  validateFieldsForPost() {
+    if (_selectedValue == null || _selectedValue == "" || imageFile == null) {
+      return _CallErrorSnackBar();
+    }
+    if (_formKey.currentState!.validate()) {
+      final data = StoryModel(
+          _tController.text,
+          _aController.text,
+          _selectedValue ?? "",
+          "",
+          _sController.text,
+          false,
+          widget.storyId);
+      _callSubmitRequest(data);
+    }
   }
+
+  _callSubmitRequest(StoryModel data){
+    if (widget.isDraft) {
+      dBloc.add(
+          UpdateDraftSubmitEvent(story: data, imageUrl: imageFile));
+    } else {
+      dBloc.add(NewPostSubmitEvent(story: data, imageUrl: imageFile));
+    }
+    setState(() {
+      _isButtonEnabled = false;
+    });
+  }
+
 }

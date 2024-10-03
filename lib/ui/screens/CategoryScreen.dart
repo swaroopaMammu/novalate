@@ -6,6 +6,8 @@ import 'package:novalate/bloc/category_bloc.dart';
 import 'package:novalate/utils/AppConstants.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
+import '../widgets/round_corner_card.dart';
+
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -15,11 +17,12 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
 
-  final cBloc = CategoryBloc();
+  late final CategoryBloc cBloc;
 
   @override
   void initState() {
     super.initState();
+    cBloc = CategoryBloc();
     cBloc.add(CategoryInitialLoadEvent());
   }
 
@@ -64,23 +67,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   onTap: (){
                     cBloc.add(CategoryCardClickEvent(category: AppConstants.dropdownItems[index]));
                   },
-                  child: Container(
-                    height: (index % 5 + 1) * 100,
-                    decoration: BoxDecoration(
-                        color:  const Color.fromARGB(255, 130, 151, 170),
-                        //  Color.fromARGB(128, 246, 239, 239),
-                        borderRadius: BorderRadius.circular(8.0)
-                    ),
-                    child: Center(
-                      child: Text(
-                        AppConstants.dropdownItems[index],
-                        style: const TextStyle(color:Colors.white,
-                            fontSize: 20,
-                            decoration: TextDecoration.none,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
+                  child: RoundCornerCard(height:(index % 5 + 1) * 100,borderCorner: 8.0,
+                  cardColor: const Color.fromARGB(255, 130, 151, 170), label: AppConstants.dropdownItems[index],
+                    labelColor: Colors.white,
+                  )
                 );
             },
           )

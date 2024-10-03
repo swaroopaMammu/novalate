@@ -39,24 +39,29 @@ class _StoryListScreenState extends State<StoryListScreen> {
             switch(state.runtimeType){
               case StoryListLoadSuccess: {
                 final s = state as StoryListLoadSuccess;
-                return    StoriesListWidget(storyList:s.storyList,onTap: (int i){
-                  storyBloc.add(StoryClickEvent(storyId: s.storyList[i].storyId));
-                },onDismiss: (int i){
-                  storyBloc.add(StoryRemoveClickEvent(storyId: s.storyList[i].storyId));
-                });
-              }
+                    return StoriesListWidget(
+                        storyList: s.storyList,
+                        showImage: false,
+                        onTap: (int i) {
+                          storyBloc.add(
+                              StoryClickEvent(storyId: s.storyList[i].storyId));
+                        },
+                        onDismiss: (int i) {
+                          storyBloc.add(StoryRemoveClickEvent(
+                              storyId: s.storyList[i].storyId));
+                        });
+                  }
               case StoryListLoadEmpty:{
                 return Center(
                 child: Text("No Stories available"),
             );
               }
-              default: SizedBox();
+              default: return SizedBox();
             }
-            return Container();
           },
           listener: (BuildContext bContext, CategoryState state ){
                 if(state is StoryClickSuccess){
-                  context.push('/${NavigationConstants.STORY_READER}/${state.storyId}');
+                  context.push('/${NavigationConstants.STORY_READER}/${state.storyId}/${NavigationConstants.CATEGORY_PARAM}');
                 }
           })
     );

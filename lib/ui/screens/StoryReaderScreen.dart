@@ -2,34 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/feed_bloc.dart';
+import '../../bloc/category_bloc.dart';
 import '../../models/data_model.dart';
+import '../widgets/image_card.dart';
 
 class StoryReaderScreen extends StatefulWidget {
   final String storyId;
-  const StoryReaderScreen({super.key, required this.storyId});
+  final Bloc bloc;
+  const StoryReaderScreen({super.key, required this.storyId,required this.bloc});
 
   @override
   State<StoryReaderScreen> createState() => _StoryReaderScreenState();
 }
 
 class _StoryReaderScreenState extends State<StoryReaderScreen> {
-     final fBloc = FeedBloc();
 
   @override
   void initState() {
     super.initState();
-    fBloc.add(StoryReaderInitialLoadEvent(storyId: widget.storyId));
+    if(widget.bloc is CategoryBloc){
+      widget.bloc.add(StoryInitialLoadEvent(storyId: widget.storyId));
+    }else{
+      widget.bloc.add(StoryReaderInitialLoadEvent(storyId: widget.storyId));
+    }
+
   }
 
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder(
-      bloc: fBloc,
+      bloc: widget.bloc,
         builder: (context,state){
       switch(state.runtimeType){
         case StoryReaderInitialState: {
           var s = state as StoryReaderInitialState;
+          return getSuccessUI(s.story);
+        }
+        case StoryInitialState : {
+          var s = state as StoryInitialState;
           return getSuccessUI(s.story);
         }
         default: return const SizedBox();
@@ -48,30 +59,17 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
          ),
          )),
      body:  SingleChildScrollView(
-       child: Column(
-         children: [
-           Container(width: double.infinity,
-               height: 300,
-               decoration: BoxDecoration(
-                 color: Colors.blueGrey[50],
-                 border: Border.all(
-                   color: Colors.black,
-                   width: 4,
-                 ),
-                 boxShadow: [
-                   BoxShadow(
-                     color: Colors.black26,
-                     blurRadius: 10,
-                     offset: Offset(4, 4),
-                   ),
-                 ],),
-               child:Image.network(story.image,fit: BoxFit.cover)),
-           Text(story.story
-               ,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 16),
-               textAlign: TextAlign.justify,
-               softWrap: true)
-
-         ],
+       child: Padding(
+         padding: const EdgeInsets.all(5.0),
+         child: Column(
+           children: [
+             BorderedImageCard(imgUrl:story.image, width: double.infinity, height: 300),
+             SizedBox(height:10),
+             Text("${story.story}"
+                 ,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 16),
+                 softWrap: true)
+           ],
+         ),
        ),
      ),
    );
