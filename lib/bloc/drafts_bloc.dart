@@ -84,7 +84,6 @@ class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
   }
 
   FutureOr<void> newPostSubmitEvent(NewPostSubmitEvent event, Emitter<DraftsState> emit) async{
-    // emit(ProgressBarStatus());
     await db.create(event.story,event.imageUrl);
     emit(NewPostSubmitState(result:"success"));
   }
