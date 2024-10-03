@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:novalate/models/data_model.dart';
-import 'package:novalate/utils/AppConstants.dart';
 
 import '../utils/database_utils.dart';
 import '../utils/firebase_fire_store.dart';
@@ -12,6 +11,7 @@ part '../event/drafts_event.dart';
 part '../state/drafts_state.dart';
 
 class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
+  static List<StoryModel> draftList = [];
   final db = DatabaseService();
   DraftsBloc() : super(DraftsInitial()) {
     on<DraftsListLoadEvent>(draftInitialLoadEvent);
@@ -30,20 +30,22 @@ class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
 
 
   FutureOr<void> draftInitialLoadEvent(DraftsListLoadEvent event, Emitter<DraftsState> emit) async{
-     await getDataFromFireStore();
-    if(AppConstants.draftList.isEmpty) {
+    List<StoryModel> storyList = await getDataFromFireStore(true);
+    draftList.clear();
+    draftList.addAll(storyList);
+    if(draftList.isEmpty) {
       emit(DraftsEmptyListState());
     }
     else{
       if(event.searchQ != ""){
-        final list = getFilteredDraftList(event.searchQ);
+        final list = getFilteredDraftList(event.searchQ,draftList);
         if(list.isEmpty){
           emit(DraftsEmptyListState());
         }else{
-          emit(DraftsListLoadingSuccessState(draftList: getFilteredDraftList(event.searchQ)));
+          emit(DraftsListLoadingSuccessState(draftList: getFilteredDraftList(event.searchQ,draftList)));
         }
       }else{
-        emit(DraftsListLoadingSuccessState(draftList: AppConstants.draftList));
+        emit(DraftsListLoadingSuccessState(draftList: draftList));
       }
     }
   }
@@ -55,14 +57,14 @@ class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
   FutureOr<void> draftsListItemRemoveEvent(DraftsListItemRemoveEvent event, Emitter<DraftsState> emit) async{
     await db.delete(event.storyId);
     List<StoryModel> newList = [];
-    for(var item in AppConstants.draftList){
+    for(var item in draftList){
       if(item.storyId != event.storyId){
         newList.add(item);
       }
     }
-    AppConstants.draftList.clear();
-    AppConstants.draftList.addAll(newList);
-    emit(DraftsListLoadingSuccessState(draftList: AppConstants.draftList));
+    draftList.clear();
+    draftList.addAll(newList);
+    emit(DraftsListLoadingSuccessState(draftList: draftList));
   }
 
   FutureOr<void> addNewPostClickEvent(AddNewPostButtonClickEvent event, Emitter<DraftsState> emit) {
@@ -70,7 +72,7 @@ class DraftsBloc extends Bloc<DraftsEvent, DraftsState> {
   }
 
   FutureOr<void> draftEditLoadEvent(DraftEditLoadEvent event, Emitter<DraftsState> emit) {
-    for(var story in AppConstants.draftList){
+    for(var story in draftList){
       if(story.storyId == event.storyId){
         emit(DraftEditLoadSuccessState(story: story));
       }

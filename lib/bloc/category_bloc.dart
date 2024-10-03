@@ -4,14 +4,14 @@ import 'package:bloc/bloc.dart';
 import 'package:novalate/utils/firebase_fire_store.dart';
 
 import '../models/data_model.dart';
-import '../utils/AppConstants.dart';
 import '../utils/database_utils.dart';
 
 part '../event/category_event.dart';
 part '../state/category_state.dart';
 
 class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
-  List<StoryModel> storyList =  [];
+  static List<StoryModel> storyList =  [];
+  static List<StoryModel> feedsList =  [];
   CategoryBloc() : super(CategoryInitial()) {
     on<CategoryInitialLoadEvent>(categoryInitialLoadEvent);
     on<CategoryCardClickEvent>(categoryCardClickEvent);
@@ -23,7 +23,9 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   }
 
   FutureOr<void> categoryInitialLoadEvent(CategoryInitialLoadEvent event, Emitter<CategoryState> emit) async{
-    await getDataFromFireStore();
+   List<StoryModel> sList = await getDataFromFireStore(false);
+   feedsList.clear();
+   feedsList.addAll(sList);
       emit(CategoryInitialState());
   }
 
@@ -33,7 +35,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
 
   FutureOr<void> storyListInitialLoadEvent(StoryListInitialLoadEvent event, Emitter<CategoryState> emit) async{
     storyList.clear();
-    for(var story in AppConstants.feedsList){
+    for(var story in feedsList){
       if( story.category == event.category){
         final m = StoryModel(story.title, story.author, story.category,
             story.image, story.story, story.isDraft,story.storyId);

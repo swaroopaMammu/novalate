@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:novalate/utils/AppConstants.dart';
 
 import '../models/data_model.dart';
 import '../utils/database_utils.dart';
@@ -10,7 +9,7 @@ part '../event/feed_event.dart';
 part '../state/feed_state.dart';
 
 class FeedBloc extends Bloc<FeedEvent, FeedState> {
-
+  static List<StoryModel> feedsList = [];
   FeedBloc() : super(FeedInitial()) {
     on<FeedsInitialLoadEvent>(feedsInitialLoadEvent);
     on<FeedsClickEvent>(feedsClickEvent);
@@ -19,19 +18,21 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
 
 
   FutureOr<void> feedsInitialLoadEvent(FeedsInitialLoadEvent event, Emitter<FeedState> emit)async{
-    await getDataFromFireStore();
-    if(AppConstants.feedsList.isEmpty){
+    List<StoryModel> storyList = await getDataFromFireStore(false);
+    feedsList.clear();
+    feedsList.addAll(storyList);
+    if(feedsList.isEmpty){
       emit(FeedInitialEmptyState());
     }else{
       if(event.searchQ != ""){
-        final list = getFilteredFeedsList(event.searchQ);
+        final list = getFilteredFeedsList(event.searchQ,feedsList);
         if(list.isEmpty){
           emit(FeedInitialEmptyState());
         }else{
-          emit(FeedInitialLoadSuccessState(storyList: getFilteredFeedsList(event.searchQ)));
+          emit(FeedInitialLoadSuccessState(storyList: getFilteredFeedsList(event.searchQ,feedsList)));
         }
       }else{
-        emit(FeedInitialLoadSuccessState(storyList: AppConstants.feedsList));
+        emit(FeedInitialLoadSuccessState(storyList: feedsList));
      }
     }
   }
@@ -40,7 +41,7 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
     emit(FeedClickSuccessState(storyId: event.storyId));
   }
   FutureOr<void> storyReaderInitialLoadEvent(StoryReaderInitialLoadEvent event, Emitter<FeedState> emit) {
-    for(var story in AppConstants.feedsList){
+    for(var story in feedsList){
       if(story.storyId == event.storyId){
         emit(StoryReaderInitialState(story: story));
       }
