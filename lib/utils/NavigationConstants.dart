@@ -64,7 +64,7 @@ class NavigationConstants{
           if(isDraft == TRUE_VALUE){
             flag = true;
           }
-          return AddNewEntryScreen(isDraft: flag,storyId: storyId);
+          return AddNewEntryScreen(isDraft: flag,storyId: storyId,dBloc: draftBloc);
         },
       ),
       GoRoute(

@@ -11,11 +11,14 @@ import 'package:novalate/utils/firebase_fire_store.dart';
 
 import '../../utils/AppConstants.dart';
 import '../widgets/bordered_text_field.dart';
+import '../widgets/boxed_button.dart';
+import '../widgets/boxed_drop_down.dart';
 
 class AddNewEntryScreen extends StatefulWidget {
   final bool isDraft;
   final String storyId;
-  const AddNewEntryScreen({super.key,required this.isDraft, required this.storyId});
+  final DraftsBloc dBloc;
+  const AddNewEntryScreen({super.key,required this.isDraft, required this.storyId,required this.dBloc});
 
   @override
   State<AddNewEntryScreen> createState() => _AddNewEntryScreenState();
@@ -41,7 +44,7 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
     _aController = TextEditingController();
     _sController = TextEditingController();
     _isButtonEnabled = true;
-    dBloc = DraftsBloc();
+    dBloc = widget.dBloc;
     db = DatabaseService();
 
     if (widget.isDraft) {
@@ -122,64 +125,43 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
             const SizedBox(height: 10),
             BorderedTextField(label: "Author",hint:"Enter Author name here",error: "Please enter your author name",controller: _aController,isLongTextField: false ),
             const SizedBox(height: 10),
-            getCategoryAndImage(),
+          Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                    child:
+                    BoxedDropDown(selectedValue: _selectedValue, dropDownList: AppConstants.dropdownItems,onSelect: (String? newValue){
+                      dBloc.add(SelectCategoryOption(option: newValue??""));
+                    }),
+                ),
+                Expanded(
+                  child:
+                  BoxedButton(buttonText: "Add Image",width: null,height: 48,fillColor: const Color.fromARGB(255, 32, 68, 114),
+                    isButtonEnabled: true,textColor: Colors.white, onClick: (){
+                    dBloc.add(AddImageButtonClickEvent());
+                  },),
+                ),
+              ],
+            ),
             const SizedBox(height: 10),
             Expanded(
               child: BorderedTextField(label: null,hint:"Enter content here",error: "Please enter your  content",controller: _sController,isLongTextField: false ),
             ),
             const SizedBox(height: 10),
-            SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                    onPressed: () {
-                      if(_isButtonEnabled){
-                        final data = StoryModel(
-                            _tController.text,
-                            _aController.text,
-                            _selectedValue ?? "",
-                            "",
-                            _sController.text,
-                            true,
-                            widget.storyId);
-                        validateFieldsForDraft(data);
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0)),
-                    ),
-                    child: _isButtonEnabled? Text("Draft",
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16)) : CircularProgressIndicator())),
-            SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                    onPressed: () {
-                      if (_isButtonEnabled) {
-                        final data = StoryModel(
-                            _tController.text,
-                            _aController.text,
-                            _selectedValue ?? "",
-                            "",
-                            _sController.text,
-                            false,
-                            widget.storyId);
-                        validateFieldsForPost(data);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        backgroundColor:
-                        const Color.fromARGB(255, 32, 68, 114)),
-                    child: _isButtonEnabled ? Text("Post",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16)) : CircularProgressIndicator())),
+            BoxedButton(buttonText: "Draft",width: double.infinity,height: null,fillColor: null,
+              isButtonEnabled: _isButtonEnabled, textColor: Colors.black,
+              onClick: (){
+                if(_isButtonEnabled){
+                  validateFieldsForDraft();
+                }
+              },),
+            BoxedButton(buttonText: "Post",width: double.infinity,height: null,fillColor: const Color.fromARGB(255, 32, 68, 114),
+              isButtonEnabled: _isButtonEnabled, textColor: Colors.white,
+              onClick: (){
+                if(_isButtonEnabled){
+                  validateFieldsForDraft();
+                }
+              },),
           ],
         ),
       ),
@@ -187,23 +169,20 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
   }
 
 
-  validateFieldsForDraft(StoryModel data){
+  validateFieldsForDraft(){
     if (_selectedValue == null || _tController.text == "") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Category or title can not be blank')),
-      );
-    } else {
-      if (widget.isDraft) {
-        dBloc.add(UpdateDraftSubmitEvent(
-            story: data, imageUrl: imageFile));
-      } else {
-        dBloc.add(NewPostSubmitEvent(
-            story: data, imageUrl: imageFile));
-      }
-      setState(() {
-        _isButtonEnabled = false;
-      });
+      return _CallErrorSnackBar();
     }
+      final data = StoryModel(
+          _tController.text,
+          _aController.text,
+          _selectedValue ?? "",
+          "",
+          _sController.text,
+          true,
+          widget.storyId);
+      _callSubmitRequest(data);
+
   }
 
   _CallErrorSnackBar(){
@@ -212,69 +191,33 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
     );
   }
 
-  validateFieldsForPost(StoryModel data) {
+  validateFieldsForPost() {
     if (_selectedValue == null || _selectedValue == "" || imageFile == null) {
       return _CallErrorSnackBar();
-    } else if (_formKey.currentState!.validate()) {
-      if (widget.isDraft) {
-        dBloc.add(
-            UpdateDraftSubmitEvent(story: data, imageUrl: imageFile));
-      } else {
-        dBloc.add(NewPostSubmitEvent(story: data, imageUrl: imageFile));
-      }
-      setState(() {
-        _isButtonEnabled = false;
-      });
+    }
+    if (_formKey.currentState!.validate()) {
+      final data = StoryModel(
+          _tController.text,
+          _aController.text,
+          _selectedValue ?? "",
+          "",
+          _sController.text,
+          false,
+          widget.storyId);
+      _callSubmitRequest(data);
     }
   }
 
-  Widget getCategoryAndImage(){
-    return   Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(color:  const Color.fromARGB(
-                  255, 118, 113, 123), width: 1.0),
-              // Border color and width
-              borderRadius:
-              BorderRadius.circular(8.0), // Rounded corners
-            ),
-            child: DropdownButton(
-              underline: const SizedBox(),
-              value: _selectedValue,
-              hint: const Text("Select a category"),
-              items: AppConstants.dropdownItems.map((String item){
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                );
-              }).toList(), onChanged: (String? newValue) {
-             dBloc.add(SelectCategoryOption(option: newValue??""));
-            },),
-          ),
-        ),
-
-        Expanded(
-          child: SizedBox(
-              height: 48,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
-                child: OutlinedButton(onPressed: (){
-                  dBloc.add(AddImageButtonClickEvent());
-                },
-                    style: OutlinedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 32, 68, 114),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        )
-                    ),
-                    child: const Text("Add Image",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 16))),
-              )),
-        ),
-      ],
-    );
+  _callSubmitRequest(StoryModel data){
+    if (widget.isDraft) {
+      dBloc.add(
+          UpdateDraftSubmitEvent(story: data, imageUrl: imageFile));
+    } else {
+      dBloc.add(NewPostSubmitEvent(story: data, imageUrl: imageFile));
+    }
+    setState(() {
+      _isButtonEnabled = false;
+    });
   }
+
 }

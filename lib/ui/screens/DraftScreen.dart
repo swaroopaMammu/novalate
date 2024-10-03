@@ -45,6 +45,7 @@ class _DraftScreenState extends State<DraftScreen> {
            if(state is DraftListItemClickState){
              context.push('${NavigationConstants.ADD_NEW_ENTRY}/${true}/${state.model.storyId}');
            }
+           widget.bloc.add(DraftsListLoadEvent(searchQ:""));
         }
     );
   }
