@@ -19,6 +19,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<StoryListInitialLoadEvent>(storyListInitialLoadEvent);
     on<StoryClickEvent>(storyClickEvent);
     on<StoryRemoveClickEvent>(storyRemoveClickEvent);
+    on<StoryInitialLoadEvent>(storyReaderInitialLoadEvent);
   }
 
   FutureOr<void> categoryInitialLoadEvent(CategoryInitialLoadEvent event, Emitter<CategoryState> emit) async{
@@ -62,5 +63,13 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     storyList.clear();
     storyList.addAll(newList);
     emit(StoryListLoadSuccess(storyList:storyList));
+  }
+
+  FutureOr<void> storyReaderInitialLoadEvent(StoryInitialLoadEvent event, Emitter<CategoryState> emit) {
+    for(var story in storyList){
+      if(story.storyId == event.storyId){
+        emit(StoryInitialState(story: story));
+      }
+    }
   }
 }

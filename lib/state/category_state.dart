@@ -26,3 +26,8 @@ class StoryClickSuccess extends CategoryActionState{
   final String storyId;
   StoryClickSuccess({required this.storyId});
 }
+
+class StoryInitialState extends CategoryState {
+  final StoryModel story;
+  StoryInitialState({required this.story});
+}

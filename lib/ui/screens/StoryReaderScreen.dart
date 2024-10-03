@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/feed_bloc.dart';
+import '../../bloc/category_bloc.dart';
 import '../../models/data_model.dart';
 
 class StoryReaderScreen extends StatefulWidget {
@@ -68,7 +69,6 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                child:Image.network(story.image,fit: BoxFit.cover)),
            Text(story.story
                ,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 16),
-               textAlign: TextAlign.justify,
                softWrap: true)
 
          ],
