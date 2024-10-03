@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
 
 import '../../bloc/drafts_bloc.dart';
+import '../widgets/boxed_button.dart';
 import '../widgets/stories_list_widget.dart';
 
 class DraftScreen extends StatefulWidget {
@@ -16,7 +17,7 @@ class DraftScreen extends StatefulWidget {
 
 class _DraftScreenState extends State<DraftScreen> {
 
-  String storyId = "hh";
+  String? storyId;
 
   @override
   void initState() {
@@ -58,21 +59,11 @@ class _DraftScreenState extends State<DraftScreen> {
             child: Text("No Drafts available"),
           ),
         ),
-        SizedBox(
-            width: double.infinity,
-            height: 60,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-              child: OutlinedButton(onPressed: (){
-                widget.bloc.add(AddNewPostButtonClickEvent());
-              },
-                  style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      )
-                  ),
-                  child: const Text("Add New Post",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 16))),
-            )),
+        BoxedButton( buttonText:"Add New Post", width: double.infinity,  padding: const EdgeInsets.all(10.0),
+            height: 60, fillColor: null, isButtonEnabled: true, textColor: Colors.black,
+            onClick: () {
+              widget.bloc.add(AddNewPostButtonClickEvent());
+            }),
       ],
     );
   }
@@ -81,27 +72,17 @@ class _DraftScreenState extends State<DraftScreen> {
     return Column(
       children: [
         Expanded(
-          child: StoriesListWidget(storyList:state.draftList,onTap: (int i){
+          child: StoriesListWidget(storyList:state.draftList,showImage: true,onTap: (int i){
             widget.bloc.add(DraftsListItemClickEvent(model: state.draftList[i]));
           },onDismiss: (int i){
             widget.bloc.add(DraftsListItemRemoveEvent(storyId:  state.draftList[i].storyId));
           })
         ),
-        SizedBox(
-            width: double.infinity,
-            height: 60,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-              child: OutlinedButton(onPressed: (){
-                widget.bloc.add(AddNewPostButtonClickEvent());
-              },
-                  style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      )
-                  ),
-                  child: const Text("Add New Post",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 16))),
-            )),
+        BoxedButton( buttonText:"Add New Post", width: double.infinity,  padding: const EdgeInsets.all(10.0),
+            height: 60, fillColor: null, isButtonEnabled: true, textColor: Colors.black,
+          onClick: () {
+          widget.bloc.add(AddNewPostButtonClickEvent());
+        }),
       ],
     );
   }

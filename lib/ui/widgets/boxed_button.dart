@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class BoxedButton extends StatelessWidget {
   const BoxedButton({super.key,required,required this.onClick,required this.buttonText,required this.width,
-  required this.height,required this.fillColor, required this.isButtonEnabled,required this.textColor});
+  required this.height,required this.fillColor, required this.isButtonEnabled,required this.textColor,required this.padding});
   final void Function() onClick;
   final String buttonText;
   final double? height;
@@ -10,6 +10,7 @@ class BoxedButton extends StatelessWidget {
   final Color? fillColor;
   final bool isButtonEnabled;
   final Color textColor;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class BoxedButton extends StatelessWidget {
         height: height,
         width: width,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
+          padding: padding,
           child: OutlinedButton(onPressed: (){
             onClick();
           },

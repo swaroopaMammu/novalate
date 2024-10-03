@@ -6,6 +6,7 @@ import 'package:novalate/bloc/category_bloc.dart';
 import 'package:novalate/bloc/drafts_bloc.dart';
 import 'package:novalate/bloc/feed_bloc.dart';
 import '../../utils/AppConstants.dart';
+import '../widgets/top_search_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key,required this.child,
@@ -19,8 +20,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int bottomBarIndex = 0;
-  final _fController = TextEditingController();
+  late int bottomBarIndex;
+  late final TextEditingController _fController;
 
   void _onTap(int index) {
       setState(() {
@@ -37,6 +38,14 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: getBottomNavBar(),
       body: widget.child
     );
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    _fController = TextEditingController();
+    bottomBarIndex = 0;
   }
 
   @override
@@ -77,61 +86,26 @@ class _HomeScreenState extends State<HomeScreen> {
         }, icon: const Icon(Icons.info_outline,color: Colors.white))
       ],
       elevation: 20.0,
-      bottom: IsHomeOrNot()
+      bottom: displayTopBarSearch()
     );
   }
 
-  PreferredSizeWidget IsHomeOrNot(){
-    if(bottomBarIndex ==0){
-    return  const PreferredSize(
+  PreferredSizeWidget displayTopBarSearch(){
+    final bool isHome = bottomBarIndex ==0;
+    return  PreferredSize(
         preferredSize: Size.fromHeight(60), child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
-        child: Text("\" Novalate inspires the storyteller within \"",
-        style: TextStyle(color: Colors.grey,fontWeight: FontWeight.w600,fontSize: 20),)),);
-    }else{
-      return getSearchBar();
-    }
-  }
-
-  PreferredSizeWidget getSearchBar(){
-    return PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 10.0),
-          child: Expanded(
-            child: TextField(
-              controller: _fController,
-              decoration: InputDecoration(
-                hintText: "Search your choice here",
-                contentPadding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 10.0),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: const BorderSide(
-                    color: Colors.white,
-                    width: 2.0,
-                  ),
-                ),
-                enabledBorder : OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: const BorderSide(
-                    color: Colors.white,
-                    width: 2.0,
-                  ),
-                ),
-                prefixIcon: IconButton(onPressed: (){
-                  switch(bottomBarIndex){
-                    case 1: widget.fBloc.add(FeedsInitialLoadEvent(searchQ: _fController.text));
-                    case 2: widget.dBloc.add(DraftsListLoadEvent(searchQ: _fController.text));
-                  }
-
-                }, icon: const Icon(Icons.search)),
-                fillColor: Colors.white,
-                filled: true,
-              ),
-            ),
-          ),
-        )
-    );
+        padding: isHome ? const EdgeInsets.fromLTRB(16, 10, 16, 20) : const EdgeInsets.symmetric(horizontal: 16.0,vertical: 10.0),
+        child: isHome ? Text("\" Novalate inspires the storyteller within \"",
+        style: TextStyle(color: Colors.grey,fontWeight: FontWeight.w600,fontSize: 20),) :
+        Expanded(
+            child:  TopSearchBar(sController: _fController ,onSearch: (String query){
+              switch(bottomBarIndex){
+                case 1: widget.fBloc.add(FeedsInitialLoadEvent(searchQ: query));
+                case 2: widget.dBloc.add(DraftsListLoadEvent(searchQ: query));
+              }
+            })
+        ),
+    ),);
   }
 
  Widget getBottomNavBar(){

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/feed_bloc.dart';
 import '../../bloc/category_bloc.dart';
 import '../../models/data_model.dart';
+import '../widgets/image_card.dart';
 
 class StoryReaderScreen extends StatefulWidget {
   final String storyId;
@@ -58,29 +59,17 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
          ),
          )),
      body:  SingleChildScrollView(
-       child: Column(
-         children: [
-           Container(width: double.infinity,
-               height: 300,
-               decoration: BoxDecoration(
-                 color: Colors.blueGrey[50],
-                 border: Border.all(
-                   color: Colors.black,
-                   width: 4,
-                 ),
-                 boxShadow: [
-                   BoxShadow(
-                     color: Colors.black26,
-                     blurRadius: 10,
-                     offset: Offset(4, 4),
-                   ),
-                 ],),
-               child:Image.network(story.image,fit: BoxFit.cover)),
-           Text(story.story
-               ,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 16),
-               softWrap: true)
-
-         ],
+       child: Padding(
+         padding: const EdgeInsets.all(5.0),
+         child: Column(
+           children: [
+             BorderedImageCard(imgUrl:story.image, width: double.infinity, height: 300),
+             SizedBox(height:10),
+             Text("${story.story}"
+                 ,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 16),
+                 softWrap: true)
+           ],
+         ),
        ),
      ),
    );

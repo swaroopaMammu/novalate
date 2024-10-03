@@ -137,7 +137,7 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
                 Expanded(
                   child:
                   BoxedButton(buttonText: "Add Image",width: null,height: 48,fillColor: const Color.fromARGB(255, 32, 68, 114),
-                    isButtonEnabled: true,textColor: Colors.white, onClick: (){
+                    isButtonEnabled: true,textColor: Colors.white,padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0), onClick: (){
                     dBloc.add(AddImageButtonClickEvent());
                   },),
                 ),
@@ -145,17 +145,17 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: BorderedTextField(label: null,hint:"Enter content here",error: "Please enter your  content",controller: _sController,isLongTextField: false ),
+              child: BorderedTextField(label: null,hint:"Enter content here",error: "Please enter your  content",controller: _sController,isLongTextField: true ),
             ),
             const SizedBox(height: 10),
             BoxedButton(buttonText: "Draft",width: double.infinity,height: null,fillColor: null,
-              isButtonEnabled: _isButtonEnabled, textColor: Colors.black,
+              isButtonEnabled: _isButtonEnabled, textColor: Colors.black,padding: const EdgeInsets.all(0.0),
               onClick: (){
                 if(_isButtonEnabled){
                   validateFieldsForDraft();
                 }
               },),
-            BoxedButton(buttonText: "Post",width: double.infinity,height: null,fillColor: const Color.fromARGB(255, 32, 68, 114),
+            BoxedButton(buttonText: "Post",padding: const EdgeInsets.all(0.0),width: double.infinity,height: null,fillColor: const Color.fromARGB(255, 32, 68, 114),
               isButtonEnabled: _isButtonEnabled, textColor: Colors.white,
               onClick: (){
                 if(_isButtonEnabled){
