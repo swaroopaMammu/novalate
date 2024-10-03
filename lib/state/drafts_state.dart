@@ -43,6 +43,6 @@ class NewEntryLoadSuccessState extends DraftsState{
 }
 
 class NewPostSubmitState extends DraftsActionState{
-  final result;
+  final String result;
   NewPostSubmitState({required this.result});
 }

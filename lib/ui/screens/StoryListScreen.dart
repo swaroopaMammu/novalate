@@ -50,13 +50,12 @@ class _StoryListScreenState extends State<StoryListScreen> {
                 child: Text("No Stories available"),
             );
               }
-              default: SizedBox();
+              default: return SizedBox();
             }
-            return Container();
           },
           listener: (BuildContext bContext, CategoryState state ){
                 if(state is StoryClickSuccess){
-                  context.push('/${NavigationConstants.STORY_READER}/${state.storyId}');
+                  context.push('/${NavigationConstants.STORY_READER}/${state.storyId}/${NavigationConstants.CATEGORY_PARAM}');
                 }
           })
     );

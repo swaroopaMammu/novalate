@@ -1,20 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:novalate/bloc/category_bloc.dart';
 import 'package:novalate/bloc/drafts_bloc.dart';
 import 'package:novalate/bloc/feed_bloc.dart';
-import 'package:novalate/ui/screens/AddNewEntryScreen.dart';
-import 'package:novalate/ui/screens/CategoryScreen.dart';
-import 'package:novalate/ui/screens/DraftScreen.dart';
-import 'package:novalate/ui/screens/FeedScreen.dart';
-import 'package:novalate/ui/screens/HomeScreen.dart';
-import 'package:novalate/ui/screens/StoryListScreen.dart';
-import 'package:novalate/ui/screens/StoryReaderScreen.dart';
 import 'package:novalate/utils/AppConstants.dart';
 import 'package:novalate/utils/NavigationConstants.dart';
-
-import 'bloc/home_bloc.dart';
 
 void main() async{
  WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +20,7 @@ class BaseWidget extends StatefulWidget {
 }
 
 class _BaseWidgetState extends State<BaseWidget> {
+
   final draftBloc = DraftsBloc();
   final feedBloc = FeedBloc();
   final categoryBloc = CategoryBloc();
@@ -43,62 +34,7 @@ class _BaseWidgetState extends State<BaseWidget> {
             255, 155, 97, 161)),
         useMaterial3: true,
       ),
-      routerConfig:GoRouter(initialLocation: NavigationConstants.HOME, routes: [
-
-        ShellRoute(
-          builder: (context, state, child) {
-            return HomeScreen(child: child,cBloc: categoryBloc,dBloc: draftBloc,fBloc: feedBloc); // Wrapper with bottom navigation bar
-          }, routes: [
-          GoRoute(
-            path: '/home',
-            pageBuilder: (context, state) {
-              return  MaterialPage(child: CategoryScreen());
-            },
-          ),
-          GoRoute(
-            path: '/feeds',
-            pageBuilder: (context, state) {
-              return  MaterialPage(child: FeedScreen(feedBloc:feedBloc));
-            },
-          ),
-          GoRoute(
-            path: '/drafts',
-            pageBuilder: (context, state) {
-              return MaterialPage(child: DraftScreen(bloc: draftBloc));
-            },
-          ),
-        ],
-        ),
-        GoRoute(
-          path: '${NavigationConstants.ADD_NEW_ENTRY}/:isDraft/:storyId',
-          name: NavigationConstants.ADD_NEW_ENTRY,
-          builder: (context, state) {
-            final String isDraft = state.pathParameters['isDraft'] ?? 'false';
-            final String storyId = state.pathParameters['storyId'] ?? '';
-            var flag = false;
-            if(isDraft == 'true'){
-              flag = true;
-            }
-            return AddNewEntryScreen(isDraft: flag,storyId: storyId,bloc: draftBloc);
-          },
-        ),
-        GoRoute(
-            path: '${NavigationConstants.STORY_LIST}/:category',
-            name: NavigationConstants.STORY_LIST,
-            builder: (context, state) {
-              final String category = state.pathParameters['category'] ?? '';
-              return  StoryListScreen(category: category);
-            },
-        ),
-        GoRoute(
-            path: '/${NavigationConstants.STORY_READER}/:storyId',
-            name: '/${NavigationConstants.STORY_READER}',
-            builder: (context, state) {
-              final String storyId = state.pathParameters['storyId'] ?? '';
-              return StoryReaderScreen(storyId: storyId);
-
-            }),
-      ]) ,
+      routerConfig: NavigationConstants().getRouter(categoryBloc,draftBloc,feedBloc)
     );
   }
 }

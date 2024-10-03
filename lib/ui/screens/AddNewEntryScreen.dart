@@ -22,17 +22,33 @@ class AddNewEntryScreen extends StatefulWidget {
 }
 
 class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
-  final _formKey = GlobalKey<FormState>();
-   String? _selectedValue ;
 
-  final _tController = TextEditingController();
-  final _aController = TextEditingController();
-  final _sController = TextEditingController();
-  bool _isButtonEnabled = true;
+  late final GlobalKey<FormState> _formKey;
+  late final TextEditingController _tController;
+  late final TextEditingController _aController;
+  late final TextEditingController _sController;
+  late bool _isButtonEnabled;
+  late final DatabaseService db;
 
-  final db = DatabaseService();
-
+  String? _selectedValue ;
   File? imageFile;
+
+  @override
+  void initState() {
+    _formKey = GlobalKey<FormState>();
+    _tController = TextEditingController();
+    _aController = TextEditingController();
+    _sController = TextEditingController();
+    _isButtonEnabled = true;
+    db = DatabaseService();
+
+    if(widget.isDraft){
+      widget.bloc.add(DraftEditLoadEvent(storyId: widget.storyId));
+    }else{
+      widget.bloc.add(NewPostEntryLoadEvent());
+    }
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -50,20 +66,10 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
   }
 
   @override
-  void initState() {
-    if(widget.isDraft){
-      widget.bloc.add(DraftEditLoadEvent(storyId: widget.storyId));
-    }else{
-      widget.bloc.add(NewPostEntryLoadEvent());
-    }
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("New Post"),
+        title: const Text(AppConstants.NEW_POST),
         centerTitle: true,
       ),
       body: BlocConsumer<DraftsBloc,DraftsState>(
@@ -145,9 +151,6 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
                 child: OutlinedButton(
                     onPressed: () {
                       if(_isButtonEnabled){
-                        setState(() {
-                          _isButtonEnabled = false;
-                        });
                         final data = StoryModel(
                             _tController.text,
                             _aController.text,
@@ -163,19 +166,16 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0)),
                     ),
-                    child:  Text("Draft",
+                    child: _isButtonEnabled? Text("Draft",
                         style: TextStyle(
                             color:_isButtonEnabled? Colors.black : Colors.grey ,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16)))),
+                            fontSize: 16)) : CircularProgressIndicator())),
             SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                     onPressed: () {
                       if(_isButtonEnabled){
-                        setState(() {
-                          _isButtonEnabled = false;
-                        });
                         final data = StoryModel(
                             _tController.text,
                             _aController.text,
@@ -193,11 +193,11 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
                         ),
                         backgroundColor:
                             const Color.fromARGB(255, 32, 68, 114)),
-                    child: Text("Post",
-                        style: TextStyle(
-                            color: _isButtonEnabled ?  Colors.white:Colors.grey,
+                    child: _isButtonEnabled? Text("Post",
+                        style:  TextStyle(
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16)))),
+                            fontSize: 16) ): CircularProgressIndicator())),
           ],
         ),
       ),
@@ -218,21 +218,27 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
         widget.bloc.add(NewPostSubmitEvent(
             story: data, imageUrl: imageFile));
       }
+      setState(() {
+        _isButtonEnabled = false;
+      });
     }
   }
 
   validateFieldsForPost(StoryModel data){
-    if(_selectedValue == null || _selectedValue == ""){
+    if(_selectedValue == null || _selectedValue == "" || imageFile == null){
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a category')),
+        SnackBar(content: Text('Please select a category and image')),
       );
-    } else {
-      if (widget.isDraft && imageFile != null && _formKey.currentState!.validate() ) {
+    } else if(_formKey.currentState!.validate()) {
+      if (widget.isDraft ) {
         widget.bloc.add(
             UpdateDraftSubmitEvent(story: data, imageUrl: imageFile));
-      } else if (_formKey.currentState!.validate() && imageFile != null) {
+      } else {
         widget.bloc.add(NewPostSubmitEvent(story: data, imageUrl: imageFile));
       }
+      setState(() {
+        _isButtonEnabled = false;
+      });
     }
   }
 

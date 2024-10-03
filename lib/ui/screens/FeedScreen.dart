@@ -31,13 +31,12 @@ class _FeedScreenState extends State<FeedScreen> {
            switch(state.runtimeType){
              case FeedInitialLoadSuccessState : return getSuccessUI(state as FeedInitialLoadSuccessState);
              case FeedInitialEmptyState : return getEmptyListScreen();
-             default : SizedBox();
+             default : return SizedBox();
            }
-           return Container();
         },
         listener: (BuildContext context, FeedState state) {
                if(state is FeedClickSuccessState){
-                 context.push('/${NavigationConstants.STORY_READER}/${state.storyId}');
+                 context.push('/${NavigationConstants.STORY_READER}/${state.storyId}${NavigationConstants.FEEDS}');
                }
         }
     );

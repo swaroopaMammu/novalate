@@ -25,3 +25,8 @@ class StoryRemoveClickEvent extends CategoryEvent{
   final String storyId;
   StoryRemoveClickEvent({required this.storyId});
 }
+
+class StoryInitialLoadEvent extends CategoryEvent{
+  String storyId;
+  StoryInitialLoadEvent({required this.storyId});
+}
