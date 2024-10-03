@@ -64,7 +64,7 @@ class NavigationConstants{
           if(isDraft == TRUE_VALUE){
             flag = true;
           }
-          return AddNewEntryScreen(isDraft: flag,storyId: storyId,bloc: draftBloc);
+          return AddNewEntryScreen(isDraft: flag,storyId: storyId);
         },
       ),
       GoRoute(
@@ -84,7 +84,7 @@ class NavigationConstants{
             if(isFrom == CATEGORY_PARAM){
               return StoryReaderScreen(storyId: storyId,bloc: categoryBloc);
             }
-            return StoryReaderScreen(storyId: storyId,bloc: feedBloc);
+            return StoryReaderScreen(storyId: storyId,bloc: FeedBloc());
           }),
     ]);
   }

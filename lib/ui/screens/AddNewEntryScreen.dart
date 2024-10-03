@@ -14,8 +14,7 @@ import '../../utils/AppConstants.dart';
 class AddNewEntryScreen extends StatefulWidget {
   final bool isDraft;
   final String storyId;
-  final DraftsBloc bloc;
-  const AddNewEntryScreen({super.key,required this.isDraft, required this.storyId, required this.bloc});
+  const AddNewEntryScreen({super.key,required this.isDraft, required this.storyId});
 
   @override
   State<AddNewEntryScreen> createState() => _AddNewEntryScreenState();
@@ -29,7 +28,7 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
   late final TextEditingController _sController;
   late bool _isButtonEnabled;
   late final DatabaseService db;
-
+  late DraftsBloc dBloc;
   String? _selectedValue ;
   File? imageFile;
 
@@ -40,12 +39,13 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
     _aController = TextEditingController();
     _sController = TextEditingController();
     _isButtonEnabled = true;
+    dBloc = DraftsBloc();
     db = DatabaseService();
 
     if(widget.isDraft){
-      widget.bloc.add(DraftEditLoadEvent(storyId: widget.storyId));
+      dBloc.add(DraftEditLoadEvent(storyId: widget.storyId));
     }else{
-      widget.bloc.add(NewPostEntryLoadEvent());
+      dBloc.add(NewPostEntryLoadEvent());
     }
     super.initState();
   }
@@ -73,7 +73,7 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
         centerTitle: true,
       ),
       body: BlocConsumer<DraftsBloc,DraftsState>(
-        bloc: widget.bloc,
+        bloc: dBloc,
         listenWhen: (prev,curr) => curr is DraftsActionState,
         buildWhen: (prev,current) => current is !DraftsActionState,
         listener: (BuildContext context, DraftsState state) {
@@ -212,10 +212,10 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
       );
     } else {
       if (widget.isDraft) {
-        widget.bloc.add(UpdateDraftSubmitEvent(
+        dBloc.add(UpdateDraftSubmitEvent(
             story: data, imageUrl: imageFile));
       } else {
-        widget.bloc.add(NewPostSubmitEvent(
+        dBloc.add(NewPostSubmitEvent(
             story: data, imageUrl: imageFile));
       }
       setState(() {
@@ -231,10 +231,10 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
       );
     } else if(_formKey.currentState!.validate()) {
       if (widget.isDraft ) {
-        widget.bloc.add(
+        dBloc.add(
             UpdateDraftSubmitEvent(story: data, imageUrl: imageFile));
       } else {
-        widget.bloc.add(NewPostSubmitEvent(story: data, imageUrl: imageFile));
+        dBloc.add(NewPostSubmitEvent(story: data, imageUrl: imageFile));
       }
       setState(() {
         _isButtonEnabled = false;
@@ -266,7 +266,7 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
                   child: Text(item),
                 );
               }).toList(), onChanged: (String? newValue) {
-              widget.bloc.add(SelectCategoryOption(option: newValue??""));
+              dBloc.add(SelectCategoryOption(option: newValue??""));
             },),
           ),
         ),
@@ -277,7 +277,7 @@ class _AddNewEntryScreenState extends State<AddNewEntryScreen> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
                 child: OutlinedButton(onPressed: (){
-                  widget.bloc.add(AddImageButtonClickEvent());
+                  dBloc.add(AddImageButtonClickEvent());
                 },
                     style: OutlinedButton.styleFrom(
                         backgroundColor: Color.fromARGB(255, 32, 68, 114),
